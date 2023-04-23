@@ -3,6 +3,7 @@ from flask_cors import CORS
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import cohere
+import tensorflow as tf
 
  
 import base64
@@ -19,24 +20,53 @@ def base64_to_image(base64_str):
 app = Flask(__name__)
 CORS(app)  # This will allow all origins by default
 
-import tensorflow as tf
-
 # load the saved model
 detect_fn = tf.saved_model.load('saved_model')
 
-# define a function to perform object detection on an image
-def detect_objects(image_np):
-    # convert the image to a tensor
-    input_tensor = tf.convert_to_tensor(image_np)
-    input_tensor = input_tensor[tf.newaxis, ...]
+def detect_objects(image):
+    # Load the saved model
+    detect_fn = tf.saved_model.load('saved_model')
+    
+    # Convert the image to a tensor
+    image = tf.convert_to_tensor(image)
+    
+    # Add a batch dimension
+    image = tf.expand_dims(image, 0)
+    
+    # Run inference on the model
+    detections = detect_fn(image)
+    
+    # Extract the outputs from the detections dictionary
+    boxes = detections['detection_boxes'][0].numpy()
+    classes = detections['detection_classes'][0].numpy().astype(np.int32)
+    scores = detections['detection_scores'][0].numpy()
+    
+    # Filter out low-confidence detections
+    high_confidence = scores > 0.5
+    boxes = boxes[high_confidence]
+    classes = classes[high_confidence]
+    scores = scores[high_confidence]
+    
+    # Post-process the output
+    image = np.squeeze(image.numpy())
+    for box, cls, score in zip(boxes, classes, scores):
+        # Convert the box coordinates from normalized to pixels
+        ymin, xmin, ymax, xmax = box
+        height, width, _ = image.shape
+        ymin = int(ymin * height)
+        xmin = int(xmin * width)
+        ymax = int(ymax * height)
+        xmax = int(xmax * width)
+        
+        # Draw the bounding box
+        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+        
+        # Add the class label
+        label = class_names[cls]
+        cv2.putText(image, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        
+    return image
 
-    # perform inference using the model
-    detections = detect_fn(input_tensor)
-
-    # postprocess the output
-    # ...
-
-    return output
 
 # API endpoint for object detection
 @app.route('/detect_objects', methods=['POST'])
