@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1EqCjrzZxIIzQtKqBaer49s0EucKTd1bL
 """
 
-!pip install google-cloud-vision
+#!pip install google-cloud-vision
 
 import os
 from google.oauth2 import service_account
@@ -114,36 +114,8 @@ def detect_and_sort_food_objects(image_path, detect_fn, category_index, min_scor
 
     return food_objects_sorted
 
-from google.colab import drive
-drive.mount('/content/drive')
-
-import tensorflow as tf
-from tensorflow.keras import layers
-
-def create_food_detection_model():
-    # Define the model architecture
-    model = tf.keras.Sequential([
-        layers.Input(shape=(None, None, 3)),
-        layers.Conv2D(32, 3, activation='relu', padding='same'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, activation='relu', padding='same'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(128, 3, activation='relu', padding='same'),
-        layers.MaxPooling2D(),
-        layers.Flatten(),
-        layers.Dense(256, activation='relu'),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(3, activation='softmax')
-    ])
-
-    # Compile the model
-    model.compile(
-        optimizer='adam',
-        loss='categorical_crossentropy',
-        metrics=['accuracy']
-    )
-
-    return model
+#from google.colab import drive
+#drive.mount('/content/drive')
 
 import cv2
 import numpy as np
@@ -296,14 +268,8 @@ def load_yolo_model():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-     # Assuming that you have a model object named `model`
-     tf.saved_model.save(model, 'saved_model')
-
-import cv2
-import numpy as np
-import tensorflow as tf
-from datetime import datetime
-from detect_food import detect_food_labels, detect_and_sort_food_objects, sort_food_by_type_and_expiry
+    # Assuming that you have a model object named `model`
+    tf.saved_model.save(model, 'saved_model')
 
 # Load the input image
 image_path = 'input.jpg'
