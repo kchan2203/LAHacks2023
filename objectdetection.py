@@ -267,33 +267,33 @@ def load_yolo_model():
 
         return model, class_names, anchors
 
-def main():
-    # Load the input image
-    image_path = 'input.jpg'
-    detect_fn = tf.saved_model.load('saved_model')
-    category_index = {
-        1: {'id': 1, 'name': 'apple'},
-        2: {'id': 2, 'name': 'banana'},
-        3: {'id': 3, 'name': 'orange'},
-        4: {'id': 4, 'name': 'pear'},
-        5: {'id': 5, 'name': 'watermelon'},
-        6: {'id': 6, 'name': 'tomato'},
-        7: {'id': 7, 'name': 'potato'},
-        8: {'id': 8, 'name': 'carrot'},
-        9: {'id': 9, 'name': 'broccoli'},
-        10: {'id': 10, 'name': 'pizza'},
-        11: {'id': 11, 'name': 'cake'},
-        12: {'id': 12, 'name': 'donut'},
-        13: {'id': 13, 'name': 'chair'}
-    }
-    min_score_thresh = 0.5
+    def main():
+        # Load the input image
+        image_path = 'input.jpg'
+        detect_fn = tf.saved_model.load('saved_model')
+        category_index = {
+            1: {'id': 1, 'name': 'apple'},
+            2: {'id': 2, 'name': 'banana'},
+            3: {'id': 3, 'name': 'orange'},
+            4: {'id': 4, 'name': 'pear'},
+            5: {'id': 5, 'name': 'watermelon'},
+            6: {'id': 6, 'name': 'tomato'},
+            7: {'id': 7, 'name': 'potato'},
+            8: {'id': 8, 'name': 'carrot'},
+            9: {'id': 9, 'name': 'broccoli'},
+            10: {'id': 10, 'name': 'pizza'},
+            11: {'id': 11, 'name': 'cake'},
+            12: {'id': 12, 'name': 'donut'},
+            13: {'id': 13, 'name': 'chair'}
+        }
+        min_score_thresh = 0.5
 
-    # Detect and sort the food objects in the input image
-    food_objects_sorted = detect_and_sort_food_objects(image_path, detect_fn, category_index, min_score_thresh)
+        # Detect and sort the food objects in the input image
+        food_objects_sorted = detect_and_sort_food_objects(image_path, detect_fn, category_index, min_score_thresh)
 
-    # Print the sorted food objects to the console
-    for obj in food_objects_sorted:
-        print(obj)
+        # Print the sorted food objects to the console
+        for obj in food_objects_sorted:
+            print(obj)
 
-if __name__ == '__main__':
-    main()
+    if __name__ == '__main__':
+        main()
