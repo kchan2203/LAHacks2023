@@ -100,7 +100,7 @@ def get_expiry(all_ing):
     ing_w_expiry = []
     for ing in all_ing.keys():
         ingredient_obj = {}
-        prediction = co.chat("In a one number answer, how long does carrot last in the fridge? Do not say approximate",
+        prediction = co.chat(f"In a one number answer, how long does {ing} last in the fridge? Do not say approximate",
                     chatlog_override=[
             {'Bot': 'Hey!'},
             {'User': 'Make the output in this format: {object_name: response} '},
