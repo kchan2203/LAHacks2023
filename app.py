@@ -3,7 +3,8 @@ from flask_cors import CORS
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import cohere
-import tensorflow as tf
+from objectdetection import load_yolo_model, detect_objects
+from flask import Flask, render_template, request
 
  
 import base64
@@ -20,66 +21,18 @@ def base64_to_image(base64_str):
 app = Flask(__name__)
 CORS(app)  # This will allow all origins by default
 
-# load the saved model
-detect_fn = tf.saved_model.load('saved_model')
+model = load_yolo_model()
 
-def detect_objects(image):
-    # Load the saved model
-    detect_fn = tf.saved_model.load('saved_model')
-    
-    # Convert the image to a tensor
-    image = tf.convert_to_tensor(image)
-    
-    # Add a batch dimension
-    image = tf.expand_dims(image, 0)
-    
-    # Run inference on the model
-    detections = detect_fn(image)
-    
-    # Extract the outputs from the detections dictionary
-    boxes = detections['detection_boxes'][0].numpy()
-    classes = detections['detection_classes'][0].numpy().astype(np.int32)
-    scores = detections['detection_scores'][0].numpy()
-    
-    # Filter out low-confidence detections
-    high_confidence = scores > 0.5
-    boxes = boxes[high_confidence]
-    classes = classes[high_confidence]
-    scores = scores[high_confidence]
-    
-    # Post-process the output
-    image = np.squeeze(image.numpy())
-    for box, cls, score in zip(boxes, classes, scores):
-        # Convert the box coordinates from normalized to pixels
-        ymin, xmin, ymax, xmax = box
-        height, width, _ = image.shape
-        ymin = int(ymin * height)
-        xmin = int(xmin * width)
-        ymax = int(ymax * height)
-        xmax = int(xmax * width)
-        
-        # Draw the bounding box
-        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-        
-        # Add the class label
-        label = class_names[cls]
-        cv2.putText(image, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        
-    return image
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-
-# API endpoint for object detection
-@app.route('/detect_objects', methods=['POST'])
-def detect_objects_endpoint():
-    # get the image data from the request
-    image_data = request.get_data()
-    image_np = np.array(Image.open(BytesIO(image_data)))
-
-    # perform object detection
-    output = detect_objects(image_np)
-
-    # return the result as JSON
-    return jsonify(output)
+@app.route('/detect', methods=['POST'])
+def detect():
+    file = request.files['image']
+    image = file.read()
+    objects = detect_objects(image, model)
+    return render_template('result.html', objects=objects)
 
 
 
