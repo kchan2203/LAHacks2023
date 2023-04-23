@@ -98,6 +98,14 @@ def recipe_maker():
     almost_expired = request.get_json()
     almost_expired = almost_expired['content']
     #all_ingredients is a list of all the ingredients in the image
+    prediction = co.chat(f"The name of a recipe using but not only {' '.join(almost_expired)}.",
+                     chatlog_override=[
+        {'Bot': 'Hey!'},
+        {'User': 'Only give me the name of a recipe, nothing else}'},
+        {'Bot': 'Okay!'},
+    ], max_tokens=300, temperature = 0,return_chatlog = True)
+    recipe_name = prediction.text
+
     recipe_prompt = f"Make a recipe using but not only {' '.join(almost_expired)}."
     prediction = co.chat(recipe_prompt,
                         chatlog_override=[
@@ -105,7 +113,8 @@ def recipe_maker():
             {'User': 'Make the output a list of these objects.  Each object is a food item.  The format for the object is: {name:food_name}'},
             {'Bot': 'Okay!'},
         ], max_tokens=300, temperature = 0,return_chatlog = True)
-    return jsonify({'recipe': prediction.text})
+    return jsonify({'name': recipe_name,
+        'recipe': prediction.text})
 
 # Run Flask app
 if __name__ == "__main__":
