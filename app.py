@@ -27,58 +27,26 @@ model = load_yolo_model()
 def index():
     return render_template('index.html')
 
-@app.route('/detect', methods=['POST'])
+@app.route('/find_expiry_single', methods=['POST'])
 def detect():
     data = request.get_json()
-    image = data['content']
-    image = base64.b64decode(image)
-    #image should be a png file by this point stored as an OBJECT
-    #the output of this should be a list of strings, each stirng being a different ingredient
-    #all_ingredients = detect_objects(image, model)
-    #temporarily, it will be this
-    all_ingredients = ['apple','tomato','potato','lettuce']
-    ing_w_expiry = get_expiry(all_ingredients)
+    all_ingredients = data['content']
+    ing_w_expiry = get_expiry([all_ingredients])
     return jsonify(ing_w_expiry)
 
-
-
+@app.route('/find_expiry', methods=['POST'])
+def detect():
+    data = request.get_json()
+    all_ingredients = data['content']
+    ing_w_expiry = get_expiry(all_ingredients)
+    return jsonify(ing_w_expiry)
 
 # initialize the Cohere Client with an API Key
 co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
 
-# API endpoint for getting data from Firebase
-# @app.route('/process_image', methods=['GET', 'POST'])
-# def get_data():
-#     # Fetch data from Firestore collection
-#     data = request.get_json()
-#     image = data['content']
-
-#     if image.startswith('data:image/png;base64,'):
-#       image = image.replace('data:image/png;base64,', '')
-
-#     # Set your desired folder and filename
-#     folder_name = 'saved_images'
-#     file_name = 'decodedImage.png'
-
-#     # Create the folder if it doesn't exist
-#     if not os.path.exists(folder_name):
-#         os.makedirs(folder_name)
-
-#     # Join the folder and filename to create the save_path
-#     save_path = os.path.join(folder_name, file_name)
-
-#     # Save decoded image to local filesystem
-#     with open(save_path, 'wb') as f:
-#         f.write(base64.b64decode(image))
-
-#     return jsonify({"test": "Image saved successfully"})
-
-
 @app.route('/')
 def index():
     return "Hello World"
-
-
 
 # API endpoint for getting data from Firebase
 @app.route('/generate_recipe', methods=['GET', 'POST'])
