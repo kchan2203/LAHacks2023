@@ -3,6 +3,8 @@ from flask_cors import CORS
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import cohere
+from objectdetection import load_yolo_model, detect_objects
+from flask import Flask, render_template, request
 
  
 import base64
@@ -18,6 +20,20 @@ def base64_to_image(base64_str):
 
 app = Flask(__name__)
 CORS(app)  # This will allow all origins by default
+
+model = load_yolo_model()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/detect', methods=['POST'])
+def detect():
+    file = request.files['image']
+    image = file.read()
+    objects = detect_objects(image, model)
+    return render_template('result.html', objects=objects)
+
 
 
 # initialize the Cohere Client with an API Key
