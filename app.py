@@ -19,6 +19,39 @@ def base64_to_image(base64_str):
 app = Flask(__name__)
 CORS(app)  # This will allow all origins by default
 
+import tensorflow as tf
+
+# load the saved model
+detect_fn = tf.saved_model.load('saved_model')
+
+# define a function to perform object detection on an image
+def detect_objects(image_np):
+    # convert the image to a tensor
+    input_tensor = tf.convert_to_tensor(image_np)
+    input_tensor = input_tensor[tf.newaxis, ...]
+
+    # perform inference using the model
+    detections = detect_fn(input_tensor)
+
+    # postprocess the output
+    # ...
+
+    return output
+
+# API endpoint for object detection
+@app.route('/detect_objects', methods=['POST'])
+def detect_objects_endpoint():
+    # get the image data from the request
+    image_data = request.get_data()
+    image_np = np.array(Image.open(BytesIO(image_data)))
+
+    # perform object detection
+    output = detect_objects(image_np)
+
+    # return the result as JSON
+    return jsonify(output)
+
+
 
 # initialize the Cohere Client with an API Key
 co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
