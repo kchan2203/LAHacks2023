@@ -4,6 +4,18 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import cohere
 
+ 
+import base64
+from PIL import Image
+from io import BytesIO
+
+import os
+
+def base64_to_image(base64_str):
+    img_data = base64.b64decode(base64_str)
+    img = Image.open(BytesIO(img_data))
+    return img
+
 app = Flask(__name__)
 
 # initialize the Cohere Client with an API Key
@@ -13,28 +25,42 @@ co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
 @app.route('/process_image', methods=['GET', 'POST'])
 def get_data():
     # Fetch data from Firestore collection
-    image = request.form['content']
-    #all_ingredients is a list of all the ingredients in the image
-    all_ingredients = image_process(image)
-    #ing_w_expiry is a dictionary of all the ingredients with their expiry dates
-    ing_w_expiry = get_expiry(all_ingredients)
-    return jsonify(ing_w_expiry)
+    data = request.get_json()
+    image = data['content']
+
+    if image.startswith('data:image/png;base64,'):
+      image = image.replace('data:image/png;base64,', '')
+
+    # Set your desired folder and filename
+    folder_name = 'saved_images'
+    file_name = 'decodedImage.png'
+
+    # Create the folder if it doesn't exist
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    # Join the folder and filename to create the save_path
+    save_path = os.path.join(folder_name, file_name)
+
+    # Save decoded image to local filesystem
+    with open(save_path, 'wb') as f:
+        f.write(base64.b64decode(image))
+
+    return jsonify({"test": "Image saved successfully"})
 
 
 @app.route('/')
 def index():
     return "Hello World"
 
-# Run Flask app
-if __name__ == "__main__":
-    app.run(debug = True, port = 21394)
 
 
 # API endpoint for getting data from Firebase
 @app.route('/generate_recipe', methods=['GET', 'POST'])
-def get_data():
+def recipe_maker():
     # Fetch data from Firestore collection
-    almost_expired = request.form['content']
+    almost_expired = request.get_json()
+    almost_expired = almost_expired['content']
     #all_ingredients is a list of all the ingredients in the image
     recipe_prompt = f"Make a recipe using but not only {' '.join(almost_expired)}."
     prediction = co.chat(recipe_prompt,
@@ -45,6 +71,9 @@ def get_data():
         ], max_tokens=300, temperature = 0,return_chatlog = True)
     return jsonify({'recipe': prediction.text})
 
+# Run Flask app
+if __name__ == "__main__":
+    app.run(debug = True, port = 21394)
 
 def image_process(image):
     return ['apple','tomato','potato','lettuce']
