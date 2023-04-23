@@ -29,10 +29,17 @@ def index():
 
 @app.route('/detect', methods=['POST'])
 def detect():
-    file = request.files['image']
-    image = file.read()
-    objects = detect_objects(image, model)
-    return render_template('result.html', objects=objects)
+    data = request.get_json()
+    image = data['content']
+    image = base64.b64decode(image)
+    #image should be a png file by this point stored as an OBJECT
+    #the output of this should be a list of strings, each stirng being a different ingredient
+    #all_ingredients = detect_objects(image, model)
+    #temporarily, it will be this
+    all_ingredients = ['apple','tomato','potato','lettuce']
+    ing_w_expiry = get_expiry(all_ingredients)
+    return jsonify(ing_w_expiry)
+
 
 
 
@@ -40,31 +47,31 @@ def detect():
 co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
 
 # API endpoint for getting data from Firebase
-@app.route('/process_image', methods=['GET', 'POST'])
-def get_data():
-    # Fetch data from Firestore collection
-    data = request.get_json()
-    image = data['content']
+# @app.route('/process_image', methods=['GET', 'POST'])
+# def get_data():
+#     # Fetch data from Firestore collection
+#     data = request.get_json()
+#     image = data['content']
 
-    if image.startswith('data:image/png;base64,'):
-      image = image.replace('data:image/png;base64,', '')
+#     if image.startswith('data:image/png;base64,'):
+#       image = image.replace('data:image/png;base64,', '')
 
-    # Set your desired folder and filename
-    folder_name = 'saved_images'
-    file_name = 'decodedImage.png'
+#     # Set your desired folder and filename
+#     folder_name = 'saved_images'
+#     file_name = 'decodedImage.png'
 
-    # Create the folder if it doesn't exist
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+#     # Create the folder if it doesn't exist
+#     if not os.path.exists(folder_name):
+#         os.makedirs(folder_name)
 
-    # Join the folder and filename to create the save_path
-    save_path = os.path.join(folder_name, file_name)
+#     # Join the folder and filename to create the save_path
+#     save_path = os.path.join(folder_name, file_name)
 
-    # Save decoded image to local filesystem
-    with open(save_path, 'wb') as f:
-        f.write(base64.b64decode(image))
+#     # Save decoded image to local filesystem
+#     with open(save_path, 'wb') as f:
+#         f.write(base64.b64decode(image))
 
-    return jsonify({"test": "Image saved successfully"})
+#     return jsonify({"test": "Image saved successfully"})
 
 
 @app.route('/')
@@ -92,9 +99,6 @@ def recipe_maker():
 # Run Flask app
 if __name__ == "__main__":
     app.run(debug = True, port = 21394)
-
-def image_process(image):
-    return ['apple','tomato','potato','lettuce']
 
 def get_expiry(all_ing):
     ing_w_expiry = []
