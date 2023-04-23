@@ -17,6 +17,8 @@ def base64_to_image(base64_str):
     return img
 
 app = Flask(__name__)
+CORS(app)  # This will allow all origins by default
+
 
 # initialize the Cohere Client with an API Key
 co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
@@ -92,7 +94,10 @@ def get_expiry(all_ing):
         ingredient_obj['name'] = ing
         ingredient_obj['expiration_date'] = shift_time[0]
         ing_w_expiry.append(ingredient_obj)
-    return jsonify(ing_w_expiry)
+    ing_w_expiry_sorted = dict(sorted(ing_w_expiry.items(), key=lambda x:x[1])) 
+
+    return jsonify(ing_w_expiry_sorted)
+
 
 def shift_date(input_string):
     # Current date
