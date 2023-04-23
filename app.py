@@ -6,13 +6,6 @@ import cohere
 
 app = Flask(__name__)
 
-#Database stuff if required
-import firebase_admin
-from firebase_admin import credentials
-
-cred = credentials.Certificate("serviceAccountKeyFirebase.json")
-firebase_admin.initialize_app(cred)
-
 # initialize the Cohere Client with an API Key
 co = cohere.Client('Zc1Bpd8ZYdYPLwMGT0uwmGQRIjaxD48A6SQsY48t')
 
@@ -34,7 +27,7 @@ def index():
 
 # Run Flask app
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(debug = True, port = 21394)
 
 
 # API endpoint for getting data from Firebase
